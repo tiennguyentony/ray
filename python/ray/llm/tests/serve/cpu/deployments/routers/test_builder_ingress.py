@@ -328,6 +328,22 @@ class TestBuildOpenaiApp:
             == DEFAULT_MAX_TARGET_ONGOING_REQUESTS
         )
 
+    def test_default_autoscaling_allows_downscale_to_zero(
+        self, llm_config, disable_placement_bundles
+    ):
+        """Test that default autoscaling config allows downscale to zero."""
+        app = build_openai_app(
+            dict(
+                llm_configs=[llm_config],
+            )
+        )
+
+        deployment = app._bound_deployment
+        autoscaling_config = deployment._deployment_config.autoscaling_config
+        assert autoscaling_config is not None
+        assert autoscaling_config.min_replicas == 0
+        assert autoscaling_config.initial_replicas == 1
+
     def test_autoscaling_config_removed_from_defaults_when_num_replicas_specified(
         self, llm_config, disable_placement_bundles
     ):
